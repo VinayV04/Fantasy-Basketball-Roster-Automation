@@ -18,14 +18,14 @@ SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 def login(driver):
     driver.implicitly_wait(10)
     #driver.get("https://fantasy.espn.com/basketball/team?leagueId=454844145&teamId=2&statSplit=currSeason")
-    driver.get("https://fantasy.espn.com/basketball/team?leagueId=454844145&teamId=2&statSplit=projections")
+    driver.get("https://fantasy.espn.com/basketball/team?leagueId=454844145&teamId=2&statSplit=currSeason")
     driver.switch_to.frame("oneid-iframe") #switch to one frame for login 
 
     username_box = driver.find_element(By.XPATH, '//*[@id="InputIdentityFlowValue"]') #find username box and enter email
     username_box.send_keys("vstrike15@gmail.com")
     driver.find_element(By.XPATH, '//*[@id="BtnSubmit"]').click()
 
-    driver.implicitly_wait(5) #wait 5 seconds if needed and then find password box and enter password
+    driver.implicitly_wait(10) #wait 5 seconds if needed and then find password box and enter password
     password_box = driver.find_element(By.XPATH, '//*[@id="InputPassword"]')
     password_box.send_keys('VinayV15')
     driver.find_element(By.XPATH, '//*[@id="BtnSubmit"]').click()
@@ -39,8 +39,7 @@ def login(driver):
     except NoSuchElementException: #if any of these elements arent found, no verification code is needed, so just continue with the program
         pass
 
-    driver.switch_to.default_content()
-    
+    driver.switch_to.default_content() 
 def getVerificationCode():
     """Shows basic usage of the Gmail API.
     Lists the user's Gmail labels.
@@ -57,7 +56,7 @@ def getVerificationCode():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+                "fantasy basketball automation\credentials.json", SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
         with open('token.json', 'w') as token:
@@ -86,61 +85,43 @@ def getVerificationCode():
 
     except Exception as e:
         print(f'An error occurred: {e}')
-
 def enterCode(code, driver):
     for i in range(0,6): #iterate from 0-5
         driver.find_element(By.CSS_SELECTOR, f"[data-id='{str(i)}']").send_keys(code[i]) #find data-id from 0 to 5 and send digit at code[i]
 
     driver.find_element(By.XPATH, '//*[@id="BtnSubmit"]').click() #submit code to move into new window
-
 def formatPlayerText(table):
     table = '\n'.join(table.split('\n')[1:])
-    table = table.replace('\n', ' ')
+    #table = table.replace('\n', ' ')
     table = table.replace('--', 'NO_GAME ---')
-    tableList = table.split()
+    tableList = table.split('\n')
     line = tableList[0] + ";" + tableList[1] + ";TEAM;POSITION;" + tableList[2] + ";" + tableList[3] + ";" + tableList[4] + "\n"
+    #slot player team position action opp status
     i = 5
     while (i < len(tableList)):
-        if (i + 8 < len(tableList)):
-            if tableList[i + 4] in ["PG,", "SG,", "SF,", "PF,", "C,", "G,", "F,"]:
-                line += tableList[i] + ";" + tableList[i + 1] + " " + tableList[i + 2] + ";" + tableList[i + 3] + ";" + tableList[i + 4] + tableList[i + 5] + ";" + tableList[i + 6]  + ";"
-                if tableList[i + 7] == "NO_GAME":
-                    line += "----" + ";" + "----" + "\n"
-                    i += 8
-                else:
-                    line += tableList[i + 7] + ";" + tableList[i + 8] + tableList[i + 9] +  "\n"
-                    i += 9
-                if (i + 9) > len(tableList):
-                    return line
-
-            elif tableList[i + 4] in ["PG", "SG", "SF", "PF", "C", "G", "F"]:
-                line += tableList[i] + ";" + tableList[i + 1] + " " + tableList[i + 2] + ";" + tableList[i + 3] + ";" + tableList[i + 4] + ";" + tableList[i + 5] + ";"
-                if tableList[i + 6] == "NO_GAME":
-                    line += "----" + ";" + "----" + "\n"
-                    i += 7
-                else:
-                    line += tableList[i + 6] + ";" + tableList[i + 7] + tableList[i + 8] +  "\n"
-                    i += 8
-                if (i + 8) > len(tableList):
-                    return line
-            else:
-                if tableList[i + 7] == "NO_GAME":
-                    line += tableList[i] + ";" + tableList[i + 1] + " " + tableList[i + 2] + " " + tableList[i + 3] + ";" + tableList[i + 4] + ";" + tableList[i + 5] + ";" + tableList[i + 6] + ";----;----\n"
-                    i += 8
-                else:
-                    if tableList[i + 6] == "NO_GAME":
-                        line += tableList[i] + ";" + tableList[i + 1] + " " + tableList[i + 2] + " " + tableList[i + 3] + ";" + tableList[i + 4] + ";" + tableList[i + 5] + ";" + ";----;----\n"
-                        i += 6
-                    else:
-                        line += tableList[i] + ";" + tableList[i + 1] + " " + tableList[i + 2] + " " + tableList[i + 3] + ";" + tableList[i + 4] + ";" + tableList[i + 5] + tableList[i + 6] + ";" + tableList[i + 7] + ";" + tableList[i + 8]  + ";" + tableList[i + 9] + tableList[i + 10] + "\n"
-                        i += 8
-                if (i + 8) > len(tableList):
-                    print(line)
-                    return line
-        i += 1
-
+        if i + 7 > len(tableList):
+            break
+        if tableList[i + 2] in ['DTD', 'SSPD', 'O']:
+            line += tableList[i] + ";" + tableList[i + 1] + " " + tableList[i + 2] + ";" + tableList[i + 3] + ";"
+            i += 4
+        else:
+            line += tableList[i] + ";" + tableList[i + 1] + ";" + tableList[i + 2] + ";"
+            i += 3
+        line += tableList[i] + ";"
+        if tableList[i + 1] not in ['MOVE']:
+            line += "----;"
+        else:
+            line += tableList[i + 1] + ";"
+            i += 1
+        if tableList[i + 1] in ['NO_GAME ---']:
+            line += tableList[i + 1] + "\n"
+            i += 2
+            continue
+        else:
+            line += tableList[i + 1] + ";" + tableList[i + 2] + "\n"
+            i += 3
+    print(line)
     return line
-
 def formatPointText(table):
     table = table.replace('\n', ' ')
     table = table.replace('\'', '')
@@ -150,7 +131,6 @@ def formatPointText(table):
         if (i % 2) == 1:
             line += tableList[i] + ' '
     return line.split()
-
 def movePG(pg, driver, currentPG):
     print("Point Guards")
     print(pg.sort_values('POINTS', ascending = False))
@@ -163,7 +143,6 @@ def movePG(pg, driver, currentPG):
         driver.find_element(By.CSS_SELECTOR,label2).click()
         return name
     return NULL
-
 def moveSG(sg, driver, currentSG):
     print("Shooting Guards")
     print(sg.sort_values('POINTS', ascending = False))
@@ -176,7 +155,6 @@ def moveSG(sg, driver, currentSG):
         driver.find_element(By.CSS_SELECTOR,label2).click()
         return name
     return NULL
-    
 def moveSF(sf, driver, currentSF):
     print("Small Forwards")
     print(sf.sort_values('POINTS', ascending = False))
@@ -201,7 +179,6 @@ def movePF(pf, driver, currentPF):
         driver.find_element(By.CSS_SELECTOR,label2).click()
         return name
     return NULL
-
 def moveC(c, driver, currentC):
     print("Centers")
     print(c.sort_values('POINTS', ascending = False))
@@ -217,12 +194,11 @@ def moveC(c, driver, currentC):
 
     
 def main():    
-
     driver = webdriver.Chrome() #load chrome driver and wait 5 seconds if needed to load website
     login(driver)
-    time.sleep(3)
+    time.sleep(5)
 
-    #table = "'STARTERS OCTOBER 24\nSLOT\nPLAYER\nACTION\nOPP\nSTATUS\nPG\nDamian Lillard\nMil\nPG\nMOVE\n--\nSG\nBuddy Hield\nInd\nSG, SF\nMOVE\n--\nSF\nAustin Reaves\nLAL\nSG, SF\nMOVE\n@Den\n6:30 PM\nPF\nNic Claxton\nBkn\nC, PF\nMOVE\n--\nC\nChet Holmgren\nOKC\nPF, C\nMOVE\n--\nG\nJamal Murray\nDen\nPG\nMOVE\nLAL\n6:30 PM\nF\nJulius Randle\nNY\nPF\nMOVE\n--\nUTIL\nAnthony Davis\nLAL\nPF, C\nMOVE\n@Den\n6:30 PM\nUTIL\nJalen Brunson\nNY\nPG, SG\nMOVE\n--\nUTIL\nPaolo Banchero\nOrl\nPF, SF\nMOVE\n--\nBench\nJa Morant\nSSPD\nMem\nPG\nMOVE\n--\nBench\nBrook Lopez\nMil\nC\nMOVE\n--\nBench\nBradley Beal\nPhx\nSG, PG\nMOVE\n@GS\n9:00 PM\nIR\nEmpty\n--'"
+    #table = 'STARTERS NOVEMBER 21\nSLOT\nPLAYER\nACTION\nOPP\nSTATUS\nPG\nJamal Murray\nO\nDen\nPG\nMOVE\n--\nSG\nAustin Reaves\nLAL\nSG, SF\nUtah\n40-297:13 2nd\nSF\nJalen Johnson\nAtl\nSF\nInd\nL 152-157\nPF\nAnthony Davis\nLAL\nPF, C\nUtah\n40-297:13 2nd\nC\nBrook Lopez\nMil\nC\nMOVE\n--\nG\nDamian Lillard\nDTD\nMil\nPG\nMOVE\n--\nF\nPaolo Banchero\nOrl\nPF, SF\nTor\nW 126-107\nUTIL\nJalen Brunson\nNY\nPG, SG\nMOVE\n--\nUTIL\nJulius Randle\nNY\nPF\nMOVE\n--\nUTIL\nChet Holmgren\nOKC\nPF, C\nMOVE\n--\nBench\nJa Morant\nSSPD\nMem\nPG\nMOVE\n--\nBench\nNic Claxton\nBkn\nC, PF\nMOVE\n--\nBench\nBradley Beal\nO\nPhx\nSG, PG\nPor\n87-723:02 3rd\nIR\nEmpty\n--'
     table = driver.find_element(By.XPATH, '//*[@id="fitt-analytics"]/div/div[3]/div/div[3]/div/div/div/div[3]/div/div/div/div/table[1]').text
     data = formatPlayerText(table)
     table = driver.find_element(By.XPATH, '//*[@id="fitt-analytics"]/div/div[3]/div/div[3]/div/div/div/div[3]/div/div/div/div/table[2]/tbody').text
@@ -231,12 +207,37 @@ def main():
     df = pd.DataFrame([x.split(';') for x in data.split('\n')[1:]], columns=['SLOT', 'PLAYER', 'TEAM', 'POSITION', 'ACTION', 'OPP', 'STATUS'])
     df['POINTS'] = points
     df.drop(13, inplace=True)
+    try:
+        df = df.loc[~df['ACTION'].str.contains('----')]
+    except Exception as e:
+        pass
+    try:
+        df = df.loc[~df['OPP'].str.contains('NO_GAME ---')]
+    except Exception as e:
+        pass
+    try:
+       df = df.loc[~df['STATUS'].str.contains('None')]
+    except Exception as e:
+        pass
+    try:
+        df = df.loc[~df['STATUS'].isin(['1st', '2nd', '3rd', '4th'])]
+    except Exception as e:
+        pass
+
+    df.reset_index(drop = True, inplace = True)
+    if df.size == 0:
+        print("No moves to be made at this time.")
+        return
     currentPG = df.iloc[0,1]
     currentSG = df.iloc[1,1]
     currentSF = df.iloc[2,1]
     currentPF = df.iloc[3,1]
     currentC = df.iloc[4,1]
-    df = df.loc[~df['OPP'].str.contains('----')]
+    try:
+        df = df.loc[~df['OPP'].str.contains('----')]
+    except Exception as e:
+        pass
+    
     df.reset_index(drop = True, inplace=True)
 
     print()
