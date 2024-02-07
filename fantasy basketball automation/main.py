@@ -22,12 +22,12 @@ def login(driver):
     driver.switch_to.frame("oneid-iframe") #switch to one frame for login 
 
     username_box = driver.find_element(By.XPATH, '//*[@id="InputIdentityFlowValue"]') #find username box and enter email
-    username_box.send_keys("vstrike15@gmail.com")
+    username_box.send_keys("") #Enter your email address here
     driver.find_element(By.XPATH, '//*[@id="BtnSubmit"]').click()
 
     driver.implicitly_wait(10) #wait 5 seconds if needed and then find password box and enter password
     password_box = driver.find_element(By.XPATH, '//*[@id="InputPassword"]')
-    password_box.send_keys('VinayV15')
+    password_box.send_keys('') #enter your password here
     driver.find_element(By.XPATH, '//*[@id="BtnSubmit"]').click()
 
     try:
@@ -202,8 +202,8 @@ def main():
     table = driver.find_element(By.XPATH, '//*[@id="fitt-analytics"]/div/div[3]/div/div[3]/div/div/div/div[3]/div/div/div/div/table[1]').text
     data = formatPlayerText(table)
     table = driver.find_element(By.XPATH, '//*[@id="fitt-analytics"]/div/div[3]/div/div[3]/div/div/div/div[3]/div/div/div/div/table[2]/tbody').text
-    #table = "'4576.0\n70.4\n3085.5\n40.1\n3611.5\n51.6\n2796.5\n39.4\n3108.0\n45.7\n3612.5\n53.9\n4323.0\n57.6\n4199.0\n70.0\n4307.5\n60.7\n4372.0\n61.6\n3291.0\n65.8\n2730.5\n41.4\n2941.5\n46.7\n--\n--'"
     points = formatPointText(table)
+    
     df = pd.DataFrame([x.split(';') for x in data.split('\n')[1:]], columns=['SLOT', 'PLAYER', 'TEAM', 'POSITION', 'ACTION', 'OPP', 'STATUS'])
     df['POINTS'] = points
     df.drop(13, inplace=True)
